@@ -9,47 +9,9 @@
 #include <string.h>
 #include <assert.h>
 
-//test routines for toMono()
-//~ char test[] = "01ab23cd45ef67gh89ij";
-//~ char* test2 = (char*) malloc(sizeof(test));
-//~ memcpy(test2, test, sizeof(test));
-//~ ALsizei siz = sizeof(test);
-//~ ALenum fmt = AL_FORMAT_STEREO16;
-//~ toMono(&test2, &siz, &fmt);
-//~ for(short i = 0; i < siz; i++) {
-	//~ std::cout << test2[i];
-//~ }
-//~ std::cout << std::endl;
-//~ exit(0);
-void toMono(char** data, ALsizei *size, ALenum *format) {
-	if( *format == AL_FORMAT_MONO8 || *format == AL_FORMAT_MONO16 ) {
-		//already mono
-		return;
-	}
-	
-	//different implementations for 8/16-bit lengths
-	//resets format properly
-	if( *format == AL_FORMAT_STEREO8) {
-		//shift 0->0, 2->1, 4->2, 6->3 etc.
-		for(ALsizei i = 2; i < *size; i+= 2) {
-			(*data)[ i / 2 ] = (*data) [ i ];
-		}
-		(*format) = AL_FORMAT_MONO8;
-	}
-	if( *format == AL_FORMAT_STEREO16) {
-		//shift 0->0 / 1->1; 4->2 / 5->3; 8->6 / 9->7 etc.
-		for(ALsizei i = 4; i < *size; i += 4) {
-			(*data)[ i/2 ] = (*data) [i];
-			(*data)[ i/2 + 1 ] = (*data) [i + 1];
-		}
-		*format = AL_FORMAT_MONO16;
-	}
-	
-	//resize
-	*size /= 2;
-	*data = (char*) realloc(*data, *size);
-}
+//Classes representing important concepts from OpenAL
 
+//Base class for error checking
 class OpenALError {
 	protected:
 		ALint error;
@@ -64,6 +26,7 @@ class OpenALError {
 		}
 };
 
+//implementing the listener
 class Listener: OpenALError {
 	public:
 		Listener() {};
@@ -142,6 +105,7 @@ class Listener: OpenALError {
 		}
 };
 
+//implementing a buffer
 class Buffer: OpenALError {
 	private:
 	
@@ -166,6 +130,7 @@ class Buffer: OpenALError {
 		}
 };
 
+//implementing the source
 class Source: OpenALError {
 	protected:
 		
@@ -379,21 +344,13 @@ class Source: OpenALError {
 		}
 };
 
-class OpenAL: Listener, Source {
+//very basic class for global info, and some book-keeping
+class OpenAL: OpenALError {
 	private:
 		ALCdevice* device;
 		ALCcontext* context;
 		ALint error;
 		
-		void resetErrorStack() { alGetError(); }
-		void errorCheck(std::string errorMsg) {
-			if((error = alGetError()) != AL_NO_ERROR) {
-				std::stringstream msg;
-				msg << errorMsg << " 0x" << std::hex << error << std::endl;
-				throw std::runtime_error(msg.str());
-			}
-		}
-	
 	public:
 		std::vector<Source> sources;
 		std::vector<Buffer> buffers;

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
-#include <queue>
 
 #include <unistd.h> //for usleep
 #include <cmath>
@@ -18,8 +17,6 @@ extern "C" {
 //https://rodic.fr/blog/libavcodec-tutorial-decode-audio-file/
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <libavutil/dict.h>
-#include <libswresample/swresample.h>
 }
 
 #include "OpenAL.h"
